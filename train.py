@@ -17,6 +17,7 @@ import logging
 import yaml
 from dataloader.dataset import processing_data
 import datetime
+from torch.optim.lr_scheduler import StepLR
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -137,11 +138,17 @@ print("Class name:", classes_name)
 # graph_args = {'strategy': 'spatial', 'layout': 'coco_cut'}
 # config 17 pose
 graph_args = {'strategy': 'spatial'}
+
 model = TwoStreamSpatialTemporalGraph(graph_args, len(classes_name)).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-# optimizer = Adadelta(model.parameters())
+#  weight_decay with L2 
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=1e-3, 
+    weight_decay=5e-4  # avoid overfitting
+)
 losser = torch.nn.BCELoss()
-# losser = torch.nn.CrossEntropyLoss()
+scheduler = StepLR(optimizer, step_size=20, gamma=0.1) # add step unique lr
+
 
 
 def train_model(model, losser, optimizer, num_epochs):
@@ -161,7 +168,7 @@ def train_model(model, losser, optimizer, num_epochs):
             mot, batch_vid, labels = mot.to(device), batch_vid.to(device), labels.to(device)
             outputs = model((batch_vid, mot))
             loss = losser(outputs, labels)
-            model.zero_grad()
+            optimizer.zero_grad(set_to_none=True) # changed
             loss.backward()
             optimizer.step()
             losses_train += loss.item()
@@ -230,6 +237,8 @@ def train_model(model, losser, optimizer, num_epochs):
         fig.savefig(path_save_model + '/result.png', dpi=500)
         plt.close(fig)
         del fig
+
+        scheduler.step()
 
     return model
 

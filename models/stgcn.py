@@ -156,17 +156,18 @@ class StreamSpatialTemporalGraph(nn.Module):
 
         self.data_bn = nn.BatchNorm1d(in_channels * A.size(1))
         self.st_gcn_networks = nn.ModuleList((
-            st_gcn(in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 128, kernel_size, 2, **kwargs),
-            st_gcn(128, 128, kernel_size, 1, **kwargs),
-            st_gcn(128, 128, kernel_size, 1, **kwargs),
-            st_gcn(128, 256, kernel_size, 2, **kwargs),
-            st_gcn(256, 256, kernel_size, 1, **kwargs),
-            st_gcn(256, 256, kernel_size, 1, **kwargs)
+            st_gcn(in_channels, 64, kernel_size, 1, dropout=0.1, residual=False, **kwargs0),
+            st_gcn(64, 64, kernel_size, 1, dropout=0.1, **kwargs),
+            st_gcn(64, 64, kernel_size, 1, dropout=0.1, **kwargs),
+            st_gcn(64, 64, kernel_size, 1, dropout=0.1, **kwargs),
+            st_gcn(64, 128, kernel_size, 2, dropout=0.2, **kwargs),
+            st_gcn(128, 128, kernel_size, 1, dropout=0.2, **kwargs),
+            st_gcn(128, 128, kernel_size, 1, dropout=0.2, **kwargs),
+            st_gcn(128, 256, kernel_size, 2, dropout=0.3, **kwargs),
+            st_gcn(256, 256, kernel_size, 1, dropout=0.3, **kwargs),
+            st_gcn(256, 256, kernel_size, 1, dropout=0.3, **kwargs)
         ))
+
 
         # initialize parameters for edge importance weighting.
         if edge_importance_weighting:
